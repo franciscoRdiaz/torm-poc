@@ -18,14 +18,14 @@ public class LogsByStompOverWSController {
 	}
 	
 	@MessageMapping("/logs")
-	@SendTo("topic/logs")
+	@SendTo("/topic/logs")
 	public String logsHandler(String mess) throws Exception	{
 		
 		Thread.sleep(10000);		
 		return "["+mess+"]: The logs would go here";
 	}
 	
-	@RequestMapping(path="/logs")
+	@RequestMapping(path="/logs")	
 	public void sendLogs(String logs){
 		this.template.convertAndSend("/topic/logs","Logs:"+logs);
 	}
