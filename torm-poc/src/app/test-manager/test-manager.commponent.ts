@@ -1,8 +1,8 @@
-import {Component} from '@angular/core';
-import {TestManagerService} from './test-manager.service';
+import {Component, OnDestroy, OnInit} from "@angular/core";
+import {TestManagerService} from "./test-manager.service";
 import {TestInfo} from "./test-info";
+import {StompWSManager} from "./stomp-ws-manager.service";
 
-import { StompService } from 'ng2-stomp-service';
 
 @Component({
   selector: 'qs-test-manager',
@@ -10,69 +10,19 @@ import { StompService } from 'ng2-stomp-service';
   styleUrls: ['./test-manager.component.scss'],
 })
 
-export class TestManagerComponent {
+export class TestManagerComponent implements  OnInit, OnDestroy{
 
   testInfo: TestInfo = undefined;
 
+  constructor(private testManagerService: TestManagerService, private stompWSManager: StompWSManager) {}
 
-  private wsConf = {
-    host: '/logs',
-    debug: true
+  ngOnInit(){
+    this.stompWSManager.configWSConnection('/logs');
+    this.stompWSManager.startWsConnection();
   }
 
-  private subscription: any;
-
-  constructor(private testManagerService: TestManagerService, stomp: StompService) {
-
-    /**
-     * Stomp configuration.
-     * @param {object} config: a configuration object.
-     *                 {host:string} websocket endpoint
-     *                 {headers?:Object} headers (optional)
-     *                 {heartbeatIn?: number} heartbeats out (optional)
-     *                 {heartbeatOut?: number} heartbeat in (optional)
-     *                 {debug?:boolean} debuging (optional)
-     *                 {recTimeout?:number} reconnection time (ms) (optional)
-     */
-    stomp.configure(this.wsConf);
-
-    /**
-     * Start connection
-     * @return {Promise} if resolved
-     */
-    stomp.startConnect().then(() => {
-      console.log('connected');
-
-      /**
-       * Subscribe.
-       * @param {string} destination: subscibe destination.
-       * @param {Function} callback(message,headers): called after server response.
-       * @param {object} headers: optional headers.
-       */
-      this.subscription = stomp.subscribe('/destination', this.response);
-
-      /**
-       * Send message.
-       * @param {string} destination: send destination.
-       * @param {object} body: a object that sends.
-       * @param {object} headers: optional headers.
-       */
-      stomp.send('destionation', {"data": "data"});
-
-    /**
-     * Unsubscribe subscription.
-     */
-    this.subscription.unsubscribe();
-
-    /**
-     * Disconnect
-     * @return {Promise} if resolved
-     */
-    stomp.disconnect().then(() => {
-      console.log('Connection closed')
-    });
-
-    });
+  ngOnDestroy(){
+    this.stompWSManager.disconnectWSConnection();
   }
 
   createAndRunTest(){
@@ -84,15 +34,4 @@ export class TestManagerComponent {
       );
 
   }
-
-  sendMessage(){
-
-  }
-
-  // Response
-  public response = (data) => {
-    console.log(data);
-  }
-
-
 }

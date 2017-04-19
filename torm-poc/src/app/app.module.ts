@@ -33,8 +33,10 @@ import {NgxChartsModule} from "@swimlane/ngx-charts";
 
 import {TestManagerComponent} from "./test-manager/test-manager.commponent";
 import {TestManagerService} from "./test-manager/test-manager.service";
+;
 
-import { StompService } from 'ng2-stomp-service';
+import {StompService} from "ng2-stomp-service";
+import {StompWSManager} from "./test-manager/stomp-ws-manager.service";
 
 const httpInterceptorProviders: Type<any>[] = [
   RequestInterceptor,
@@ -82,6 +84,7 @@ const httpInterceptorProviders: Type<any>[] = [
     Title,
     TestManagerService,
     StompService,
+    StompWSManager,
   ], // additional providers needed for this module
   entryComponents: [ ],
   bootstrap: [ AppComponent ],
