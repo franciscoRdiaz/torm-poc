@@ -73,7 +73,7 @@ export class StompWSManager{
      * @param {object} body: a object that sends.
      * @param {object} headers: optional headers.
      */
-    this.stomp.send('destionation', {"data": "data"});
+    this.stomp.send('/topic/logs', {"data": "data"});
   }
 
   // Response

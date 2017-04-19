@@ -1,7 +1,15 @@
 package org.elastest.urjc.torm.service;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+
 import org.elastest.urjc.torm.api.data.DockerContainerInfo;
+import org.elastest.urjc.torm.utils.ExecStartResultCallbackWebsocket;
+import org.elastest.urjc.torm.websocket.client.WebSocketClient;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
 
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.CreateContainerResponse;
@@ -15,67 +23,104 @@ import com.github.dockerjava.api.model.Volume;
 import com.github.dockerjava.core.DefaultDockerClientConfig;
 import com.github.dockerjava.core.DockerClientBuilder;
 import com.github.dockerjava.core.DockerClientConfig;
-import com.github.dockerjava.core.command.ExecStartResultCallback;
 import com.github.dockerjava.core.command.PullImageResultCallback;
+
 
 @Service
 public class DockerContainerManagerService {
 	
-	public DockerContainerInfo createDockerContainer(){
-		String image = "edujgurjc/torm-test-01";
-		String volumeDirectory = "/reports";
-		String appDirectory = "/torm/torm-test-01";
+	private static final String image = "edujgurjc/torm-test-01";
+	private static final String volumeDirectory = "/reports";
+	private static final String appDirectory = "/torm/torm-test-01";
+	
+	@Autowired
+	private WebSocketClient webSocketClient;
+	
+	@Autowired
+	private ExecStartResultCallbackWebsocket execStartResultCallbackWebsocket;
+	
+	private DockerClient dockerClient;
+	private CreateContainerResponse container;
 		
-		DockerClientConfig config = DefaultDockerClientConfig.createDefaultConfigBuilder()
-				.withDockerHost("tcp://192.168.99.100:2376").build();
-		
-		DockerClient dockerClient = DockerClientBuilder.getInstance(config).build();
+	public DockerContainerInfo createDockerContainer() {
 
-		Info info = dockerClient.infoCmd().exec();
-		System.out.println("Hola: "+info);
+		this.dockerClient = DockerClientBuilder.getInstance().build();
+	
+//		DockerClientConfig config =
+//		DefaultDockerClientConfig.createDefaultConfigBuilder()
+//		.withDockerHost("tcp://192.168.99.100:2376")
+//		.build();
+//
+//		this.dockerClient = DockerClientBuilder.getInstance(config).build();
+		
+		Info info = this.dockerClient.infoCmd().exec();
+		System.out.println("Info: " + info);
 
 		ExposedPort tcp8080 = ExposedPort.tcp(8080);
-		//ExposedPort tcp3306 = ExposedPort.tcp(3306);
 
 		Ports portBindings = new Ports();
 		portBindings.bind(tcp8080, Binding.bindPort(8088));
-		//portBindings.bind(tcp3306, Binding.bindPort(3366));
 
-		//String envVar = "MYSQL_PASS=\"admin\"";
-		
+
 		Volume volume1 = new Volume(volumeDirectory);
-		
-		dockerClient.pullImageCmd(image).exec(new PullImageResultCallback()).awaitSuccess();
-		
-		CreateContainerResponse container = dockerClient.createContainerCmd(image)
-			.withExposedPorts(tcp8080)
-			.withPortBindings(portBindings)
-			.withVolumes(volume1)
-			.withBinds(new Bind("/var" + appDirectory, volume1))
-			//.withEnv(envVar)
-			.exec();
-				
-		dockerClient.startContainerCmd(container.getId()).exec();
 
-        ExecStartResultCallback loggingCallback = new ExecStartResultCallback(System.out, System.err);
-        
-		try {
-			dockerClient.logContainerCmd(container.getId()).withStdErr(true).withStdOut(true).withFollowStream(true).exec(loggingCallback).awaitCompletion();
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		this.dockerClient.pullImageCmd(image).exec(new PullImageResultCallback()).awaitSuccess();
+
+		this.container = this.dockerClient.createContainerCmd(image).withExposedPorts(tcp8080)
+				.withPortBindings(portBindings).withVolumes(volume1).withBinds(new Bind("/var" + appDirectory, volume1))
+				.exec();
+
+		this.dockerClient.startContainerCmd(this.container.getId()).exec();
 		
+		this.manageLogs();
+
 		DockerContainerInfo dockerContainerInfo = new DockerContainerInfo();
-		dockerContainerInfo.setId(container.getId());
-		
-		  try {
-	            dockerClient.removeImageCmd(image).withForce(true).exec();
-	        } catch (NotFoundException e) {
-	            // just ignore if not exist
-	        }
-		
+		dockerContainerInfo.setId(this.container.getId());
+
+		try {
+			this.dockerClient.removeImageCmd(image).withForce(true).exec();
+		} catch (NotFoundException e) {
+			// just ignore if not exist
+		}
+
 		return dockerContainerInfo;
 	}
+	
+	
+	public void manageLogs(){
+		webSocketClient.stomp();
+		
+		FileOutputStream fop = null;
+		File file;
 
+		try {
+			file = new File("/var" + appDirectory + "/log.txt");
+			fop = new FileOutputStream(file);
+
+			if (!file.exists()) {
+				file.createNewFile();
+			}
+
+			ExecStartResultCallbackWebsocket loggingCallback = execStartResultCallbackWebsocket;//new ExecStartResultCallbackWebsocket(fop, fop);
+			execStartResultCallbackWebsocket.setStdout(fop);
+			execStartResultCallbackWebsocket.setStderr(fop);
+			try {
+				this.dockerClient.logContainerCmd(this.container.getId()).withStdErr(true).withStdOut(true).withFollowStream(true)
+						.exec(loggingCallback).awaitCompletion();
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				if (fop != null) {
+					fop.close();
+				}
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+	}
 }

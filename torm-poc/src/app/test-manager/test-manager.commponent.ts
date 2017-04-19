@@ -36,6 +36,10 @@ export class TestManagerComponent implements  OnInit, OnDestroy{
         },
         error => console.error("Error:" + error)
       );
-
   }
+
+  sendMessage(){
+    this.stompWSManager.sendWSMessage();
+  }
+
 }
