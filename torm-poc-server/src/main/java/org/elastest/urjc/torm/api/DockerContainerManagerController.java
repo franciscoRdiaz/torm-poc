@@ -4,6 +4,7 @@ import org.elastest.urjc.torm.api.data.DockerContainerInfo;
 import org.elastest.urjc.torm.service.DockerContainerManagerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -18,7 +19,7 @@ public class DockerContainerManagerController {
 	@Autowired
 	private DockerContainerManagerService dockerContainerManagerService;
 	
-	
+	@CrossOrigin(origins = "http://localhost:4200")
 	@RequestMapping (value = "/", method = RequestMethod.POST)
 	@ResponseStatus(HttpStatus.CREATED)
 	public DockerContainerInfo createDockerContainer(@RequestBody DockerContainerInfo dockerContainerInfo){
