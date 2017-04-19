@@ -29,7 +29,11 @@ export class TestManagerComponent implements  OnInit, OnDestroy{
     this.testInfo = new TestInfo();
     this.testManagerService.createAndRunTest(this.testInfo)
       .subscribe(
-        testInfo => this.testInfo.id = testInfo.id,
+        testInfo => {
+          this.testInfo.id = testInfo.id;
+          console.log('idContainer:'+this.testInfo.id
+          )
+        },
         error => console.error("Error:" + error)
       );
 
