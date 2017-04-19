@@ -20,7 +20,7 @@ public class WebSocketClient {
 		WebSocketStompClient stompClient = new WebSocketStompClient(webSocketClient);
 		stompClient.setMessageConverter(new StringMessageConverter());
 		
-		String url = "ws://127.0.0.1:8080/endpoint";
+		String url = "ws://localhost:8080/logssss";
 		StompSessionHandler sessionHandler = new MyStompSessionHandler();
 		stompClient.connect(url, sessionHandler);
 	}

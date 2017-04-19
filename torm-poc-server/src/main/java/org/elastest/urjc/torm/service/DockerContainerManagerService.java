@@ -25,6 +25,7 @@ import com.github.dockerjava.core.DockerClientBuilder;
 import com.github.dockerjava.core.DockerClientConfig;
 import com.github.dockerjava.core.command.PullImageResultCallback;
 
+
 @Service
 public class DockerContainerManagerService {
 	
@@ -34,6 +35,9 @@ public class DockerContainerManagerService {
 	
 	@Autowired
 	private WebSocketClient webSocketClient;
+	
+	@Autowired
+	private ExecStartResultCallbackWebsocket execStartResultCallbackWebsocket;
 	
 	private DockerClient dockerClient;
 	private CreateContainerResponse container;
@@ -97,8 +101,9 @@ public class DockerContainerManagerService {
 				file.createNewFile();
 			}
 
-			ExecStartResultCallbackWebsocket loggingCallback = new ExecStartResultCallbackWebsocket(fop, fop);
-
+			ExecStartResultCallbackWebsocket loggingCallback = execStartResultCallbackWebsocket;//new ExecStartResultCallbackWebsocket(fop, fop);
+			execStartResultCallbackWebsocket.setStdout(fop);
+			execStartResultCallbackWebsocket.setStderr(fop);
 			try {
 				this.dockerClient.logContainerCmd(this.container.getId()).withStdErr(true).withStdOut(true).withFollowStream(true)
 						.exec(loggingCallback).awaitCompletion();
