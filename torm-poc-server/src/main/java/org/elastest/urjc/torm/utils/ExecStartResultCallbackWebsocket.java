@@ -1,17 +1,18 @@
 package org.elastest.urjc.torm.utils;
 
+import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.Writer;
+import java.io.OutputStreamWriter;
 
-import javax.ws.rs.POST;
 
+import org.elastest.urjc.torm.api.data.LogTrace;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
-import org.springframework.stereotype.Controller;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestMapping;
 
 import com.github.dockerjava.api.model.Frame;
 import com.github.dockerjava.core.async.ResultCallbackTemplate;
@@ -24,29 +25,8 @@ public class ExecStartResultCallbackWebsocket extends ResultCallbackTemplate<Exe
 	
 	@Autowired
 	private  SimpMessagingTemplate messagingTemplate;
-//	@Autowired
-//	private LogsByStompOverWSController logsByStompOverWSController;
-	
 	
 	private OutputStream stdout, stderr;
-
-//	@Autowired
-//	public ExecStartResultCallbackWebsocket(OutputStream stdout, OutputStream stderr, SimpMessagingTemplate messagingTemplate) {
-//		this.stdout = stdout;
-//		this.stderr = stderr;
-//	}
-	
-//	public ExecStartResultCallbackWebsocket(OutputStream stdout, OutputStream stderr) {
-//		this.stdout = stdout;
-//		this.stderr = stderr;
-//	}
-
-//	@Autowired
-//	public ExecStartResultCallbackWebsocket(SimpMessagingTemplate messagingTemplate) {
-//		//this(null, null, messagingTemplate);
-//		this.messagingTemplate = messagingTemplate;		
-//		
-//	}
 
 	@Override
 	public void onNext(Frame frame) {
@@ -56,28 +36,12 @@ public class ExecStartResultCallbackWebsocket extends ResultCallbackTemplate<Exe
 				case STDOUT:
 				case RAW:
 					if (stdout != null) {
-						try {
-							//logsByStompOverWSController.sendLogs(frame.toString());
-						} catch (Exception e) {
-							//ToDo
-							
-							e.printStackTrace();
-						}
-						stdout.write(frame.getPayload());
-						stdout.flush();
-						}					
-					afterTradeExecuted();
+						writeTrace(frame, stdout, "");
+					}					
 					break;
 				case STDERR:
 					if (stderr != null) {
-						try {
-							//logsByStompOverWSController.sendLogs("Stderr: " + frame.toString());
-						} catch (Exception e) {
-							//ToDo
-						}
-						stderr.write("Stderr: ".getBytes());
-						stderr.write(frame.getPayload());
-						stderr.flush();
+						writeTrace(frame, stderr, "Stderr: ");
 					}
 					break;
 				default:
@@ -90,12 +54,20 @@ public class ExecStartResultCallbackWebsocket extends ResultCallbackTemplate<Exe
 			LOGGER.debug(frame.toString());
 		}
 	}
-	
+
+	public void writeTrace(Frame frame, OutputStream out, String label) throws IOException{
+		LogTrace trace = new LogTrace(frame.toString());
+		afterTradeExecuted(trace);
+		
+		Writer writer = new BufferedWriter(new OutputStreamWriter(out, "UTF-8"));
+		writer.write(label);
+		writer.write(frame.toString());
+		writer.flush();
+	}
     
-	public void afterTradeExecuted() {
-		//System.out.println("[Log]:"+ );
+	public void afterTradeExecuted(LogTrace trace) {
 		try{
-			this.messagingTemplate.convertAndSend("/topic/logs", "OK");
+			this.messagingTemplate.convertAndSend("/topic/logs", trace.toJSON());
 		}catch(Exception e){
 			e.printStackTrace();
 		}
