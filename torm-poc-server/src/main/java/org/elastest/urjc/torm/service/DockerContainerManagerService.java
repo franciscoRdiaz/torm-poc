@@ -1,15 +1,24 @@
 package org.elastest.urjc.torm.service;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 
+import org.apache.maven.plugins.surefire.report.ReportTestSuite;
+import org.apache.maven.plugins.surefire.report.SurefireReportParser;
+import org.apache.maven.reporting.MavenReportException;
 import org.elastest.urjc.torm.api.data.DockerContainerInfo;
 import org.elastest.urjc.torm.utils.ExecStartResultCallbackWebsocket;
-import org.elastest.urjc.torm.websocket.client.WebSocketClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.fasterxml.jackson.core.JsonGenerationException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.CreateContainerResponse;
 import com.github.dockerjava.api.exception.NotFoundException;
@@ -30,9 +39,6 @@ public class DockerContainerManagerService {
 	private static final String image = "edujgurjc/torm-test-01";
 	private static final String volumeDirectory = "/reports";
 	private static final String appDirectory = "/torm/torm-test-01";
-
-	@Autowired
-	private WebSocketClient webSocketClient;
 
 	@Autowired
 	private ExecStartResultCallbackWebsocket execStartResultCallbackWebsocket;
@@ -83,20 +89,18 @@ public class DockerContainerManagerService {
 	}
 
 	public void manageLogs() {
-		webSocketClient.stomp();
-
 		FileWriter file = null;
-        PrintWriter pw = null;
+		PrintWriter pw = null;
 
 		try {
-			
+
 			file = new FileWriter("/var" + appDirectory + "/log.txt");
 			pw = new PrintWriter(file);
-			
+
 			ExecStartResultCallbackWebsocket loggingCallback = execStartResultCallbackWebsocket;
 			execStartResultCallbackWebsocket.setStdout(pw);
 			execStartResultCallbackWebsocket.setStderr(pw);
-			
+
 			try {
 				this.dockerClient.logContainerCmd(this.container.getId()).withStdErr(true).withStdOut(true)
 						.withFollowStream(true).exec(loggingCallback).awaitCompletion();
@@ -111,9 +115,38 @@ public class DockerContainerManagerService {
 				if (file != null) {
 					file.close();
 				}
+
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
+		}
+		
+		this.saveTestSuite();
+	}
+
+	public void saveTestSuite() {
+		File surefireXML = new File("/var" + appDirectory + "/surefire-reports/");
+		List<File> reportsDir = new ArrayList<>();
+		reportsDir.add(surefireXML);
+
+		SurefireReportParser surefireReport = new SurefireReportParser(reportsDir, new Locale("en", "US"), null);
+		try {
+			List<ReportTestSuite> testSuites = surefireReport.parseXMLReportFiles();
+			
+			ObjectMapper mapper = new ObjectMapper();
+			//Object to JSON in file
+			try {
+				mapper.writeValue(new File("/var" + appDirectory + "/testsuites.json"), testSuites);
+			} catch (JsonGenerationException e) {
+				e.printStackTrace();
+			} catch (JsonMappingException e) {
+				e.printStackTrace();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+
+		} catch (MavenReportException e) {
+			e.printStackTrace();
 		}
 	}
 }
