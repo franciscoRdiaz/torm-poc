@@ -14,12 +14,14 @@
         <button md-raised-button class="text-upper" (click)="createAndRunTest()">Button Container</button>
         <button md-raised-button class="text-upper" (click)="sendMessage()">SendMessager</button>
 
+
       </md-card>
     </div>
     <div flex-gt-sm="40">
       <md-card>
-        <md-card-title>Alerts</md-card-title>
+        <md-card-title>Log</md-card-title>
         <md-card-subtitle>Items requiring attention</md-card-subtitle>
+
         <md-divider></md-divider>
 
         <md-divider></md-divider>
@@ -28,6 +30,22 @@
             <span>View More</span>
           </a>
         </md-card-actions>
+      </md-card>
+    </div>
+  </div>
+  <div layout-gt-sm="row" tdMediaToggle="gt-xs" [mediaClasses]="['push-sm']">
+    <div flex-gt-sm="60">
+      <md-card>
+        <md-card-title>Test Results</md-card-title>
+        <md-divider></md-divider>
+        <md-card-content>
+          <ul>
+            <li *ngFor="let trace of traces">
+              {{trace.trace}}
+            </li>
+          </ul>
+
+        </md-card-content>
       </md-card>
     </div>
   </div>

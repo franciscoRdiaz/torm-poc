@@ -3,6 +3,7 @@
  */
 import {Injectable} from "@angular/core";
 import { StompService } from 'ng2-stomp-service';
+import {LogTrace} from "./LogTrace";
 
 @Injectable()
 export class StompWSManager{
@@ -13,6 +14,8 @@ export class StompWSManager{
   }
 
   private subscription: any;
+
+  traces: LogTrace[] = [];
 
   constructor(private stomp: StompService){}
 
@@ -79,5 +82,6 @@ export class StompWSManager{
   // Response
   public response = (data) => {
     console.log(data);
+    this.traces.push(data);
   }
 }

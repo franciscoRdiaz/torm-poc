@@ -2,6 +2,7 @@ import {Component, OnDestroy, OnInit} from "@angular/core";
 import {TestManagerService} from "./test-manager.service";
 import {TestInfo} from "./test-info";
 import {StompWSManager} from "./stomp-ws-manager.service";
+import {LogTrace} from "./LogTrace";
 
 
 @Component({
@@ -13,12 +14,14 @@ import {StompWSManager} from "./stomp-ws-manager.service";
 export class TestManagerComponent implements  OnInit, OnDestroy{
 
   testInfo: TestInfo = undefined;
+  traces: LogTrace[] = [];
 
   constructor(private testManagerService: TestManagerService, private stompWSManager: StompWSManager) {}
 
   ngOnInit(){
     this.stompWSManager.configWSConnection('/logs');
     this.stompWSManager.startWsConnection();
+    this.traces = this.stompWSManager.traces;
   }
 
   ngOnDestroy(){
