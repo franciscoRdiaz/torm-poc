@@ -1,15 +1,14 @@
 package org.elastest.urjc.torm.service;
 
-import java.io.File;
-import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
 
 import org.elastest.urjc.torm.api.data.DockerContainerInfo;
 import org.elastest.urjc.torm.utils.ExecStartResultCallbackWebsocket;
 import org.elastest.urjc.torm.websocket.client.WebSocketClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.CreateContainerResponse;
@@ -25,34 +24,32 @@ import com.github.dockerjava.core.DockerClientBuilder;
 import com.github.dockerjava.core.DockerClientConfig;
 import com.github.dockerjava.core.command.PullImageResultCallback;
 
-
 @Service
 public class DockerContainerManagerService {
-	
+
 	private static final String image = "edujgurjc/torm-test-01";
 	private static final String volumeDirectory = "/reports";
 	private static final String appDirectory = "/torm/torm-test-01";
-	
+
 	@Autowired
 	private WebSocketClient webSocketClient;
-	
+
 	@Autowired
 	private ExecStartResultCallbackWebsocket execStartResultCallbackWebsocket;
-	
+
 	private DockerClient dockerClient;
 	private CreateContainerResponse container;
-		
+
 	public DockerContainerInfo createDockerContainer() {
 
 		this.dockerClient = DockerClientBuilder.getInstance().build();
-	
-//		DockerClientConfig config =
-//		DefaultDockerClientConfig.createDefaultConfigBuilder()
-//		.withDockerHost("tcp://192.168.99.100:2376")
-//		.build();
-//
-//		this.dockerClient = DockerClientBuilder.getInstance(config).build();
-		
+
+		// DockerClientConfig config =
+		// DefaultDockerClientConfig.createDefaultConfigBuilder()
+		// .withDockerHost("tcp://192.168.99.100:2376")
+		// .build();
+		// this.dockerClient = DockerClientBuilder.getInstance(config).build();
+
 		Info info = this.dockerClient.infoCmd().exec();
 		System.out.println("Info: " + info);
 
@@ -60,7 +57,6 @@ public class DockerContainerManagerService {
 
 		Ports portBindings = new Ports();
 		portBindings.bind(tcp8080, Binding.bindPort(8088));
-
 
 		Volume volume1 = new Volume(volumeDirectory);
 
@@ -71,7 +67,7 @@ public class DockerContainerManagerService {
 				.exec();
 
 		this.dockerClient.startContainerCmd(this.container.getId()).exec();
-		
+
 		this.manageLogs();
 
 		DockerContainerInfo dockerContainerInfo = new DockerContainerInfo();
@@ -85,28 +81,25 @@ public class DockerContainerManagerService {
 
 		return dockerContainerInfo;
 	}
-	
-	
-	public void manageLogs(){
+
+	public void manageLogs() {
 		webSocketClient.stomp();
-		
-		FileOutputStream fop = null;
-		File file;
+
+		FileWriter file = null;
+        PrintWriter pw = null;
 
 		try {
-			file = new File("/var" + appDirectory + "/log.txt");
-			fop = new FileOutputStream(file);
-
-			if (!file.exists()) {
-				file.createNewFile();
-			}
-
-			ExecStartResultCallbackWebsocket loggingCallback = execStartResultCallbackWebsocket;//new ExecStartResultCallbackWebsocket(fop, fop);
-			execStartResultCallbackWebsocket.setStdout(fop);
-			execStartResultCallbackWebsocket.setStderr(fop);
+			
+			file = new FileWriter("/var" + appDirectory + "/log.txt");
+			pw = new PrintWriter(file);
+			
+			ExecStartResultCallbackWebsocket loggingCallback = execStartResultCallbackWebsocket;
+			execStartResultCallbackWebsocket.setStdout(pw);
+			execStartResultCallbackWebsocket.setStderr(pw);
+			
 			try {
-				this.dockerClient.logContainerCmd(this.container.getId()).withStdErr(true).withStdOut(true).withFollowStream(true)
-						.exec(loggingCallback).awaitCompletion();
+				this.dockerClient.logContainerCmd(this.container.getId()).withStdErr(true).withStdOut(true)
+						.withFollowStream(true).exec(loggingCallback).awaitCompletion();
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
@@ -115,8 +108,8 @@ public class DockerContainerManagerService {
 			e.printStackTrace();
 		} finally {
 			try {
-				if (fop != null) {
-					fop.close();
+				if (file != null) {
+					file.close();
 				}
 			} catch (IOException e) {
 				e.printStackTrace();

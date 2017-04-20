@@ -1,11 +1,7 @@
 package org.elastest.urjc.torm.utils;
 
-import java.io.BufferedWriter;
 import java.io.IOException;
-import java.io.OutputStream;
-import java.io.Writer;
-import java.io.OutputStreamWriter;
-
+import java.io.PrintWriter;
 
 import org.elastest.urjc.torm.api.data.LogTrace;
 import org.slf4j.Logger;
@@ -26,7 +22,7 @@ public class ExecStartResultCallbackWebsocket extends ResultCallbackTemplate<Exe
 	@Autowired
 	private  SimpMessagingTemplate messagingTemplate;
 	
-	private OutputStream stdout, stderr;
+	private PrintWriter stdout, stderr;
 
 	@Override
 	public void onNext(Frame frame) {
@@ -55,14 +51,13 @@ public class ExecStartResultCallbackWebsocket extends ResultCallbackTemplate<Exe
 		}
 	}
 
-	public void writeTrace(Frame frame, OutputStream out, String label) throws IOException{
-		LogTrace trace = new LogTrace(frame.toString());
+	public void writeTrace(Frame frame, PrintWriter pw, String label) throws IOException{
+		String frameString = frame.toString();
+		
+		LogTrace trace = new LogTrace(frameString);
 		afterTradeExecuted(trace);
 		
-		Writer writer = new BufferedWriter(new OutputStreamWriter(out, "UTF-8"));
-		writer.write(label);
-		writer.write(frame.toString());
-		writer.flush();
+		pw.println(frameString);
 	}
     
 	public void afterTradeExecuted(LogTrace trace) {
@@ -73,19 +68,19 @@ public class ExecStartResultCallbackWebsocket extends ResultCallbackTemplate<Exe
 		}
 	}
 
-	public OutputStream getStdout() {
+	public PrintWriter getStdout() {
 		return stdout;
 	}
 
-	public void setStdout(OutputStream stdout) {
+	public void setStdout(PrintWriter stdout) {
 		this.stdout = stdout;
 	}
 
-	public OutputStream getStderr() {
+	public PrintWriter getStderr() {
 		return stderr;
 	}
 
-	public void setStderr(OutputStream stderr) {
+	public void setStderr(PrintWriter stderr) {
 		this.stderr = stderr;
 	}
 	
