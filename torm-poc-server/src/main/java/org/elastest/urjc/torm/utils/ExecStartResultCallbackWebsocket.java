@@ -95,8 +95,7 @@ public class ExecStartResultCallbackWebsocket extends ResultCallbackTemplate<Exe
 	public void afterTradeExecuted() {
 		//System.out.println("[Log]:"+ );
 		try{
-			this.messagingTemplate.convertAndSendToUser(
-					"Pepito", "/topic/logs", "OK");
+			this.messagingTemplate.convertAndSend("/topic/logs", "OK");
 		}catch(Exception e){
 			e.printStackTrace();
 		}
