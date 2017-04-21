@@ -2,7 +2,8 @@ import {Component, OnDestroy, OnInit} from "@angular/core";
 import {TestManagerService} from "./test-manager.service";
 import {TestInfo} from "./test-info";
 import {StompWSManager} from "./stomp-ws-manager.service";
-import {LogTrace} from "./LogTrace";
+import {LogTrace} from "./log-trace";
+import {Image} from "./image";
 
 
 @Component({
@@ -15,8 +16,12 @@ export class TestManagerComponent implements  OnInit, OnDestroy{
 
   testInfo: TestInfo = undefined;
   traces: LogTrace[] = [];
+  images: Image[] = [];
 
-  constructor(private testManagerService: TestManagerService, private stompWSManager: StompWSManager) {}
+  constructor(private testManagerService: TestManagerService, private stompWSManager: StompWSManager) {
+    /* TODO: in the future, fill it with the database content */
+    this.images.push({name:"edujgurjc/torm-test-01"});
+  }
 
   ngOnInit(){
     this.stompWSManager.configWSConnection('/logs');
@@ -29,6 +34,7 @@ export class TestManagerComponent implements  OnInit, OnDestroy{
   }
 
   createAndRunTest(){
+    this.stompWSManager.traces.splice(0, this.stompWSManager.traces.length);
     this.testInfo = new TestInfo();
     this.testManagerService.createAndRunTest(this.testInfo)
       .subscribe(

@@ -6,20 +6,25 @@
     <a md-icon-button mdTooltip="Github" href="https://github.com/teradata/covalent" target="_blank"><md-icon svgIcon="assets:github"></md-icon></a>
   </div>
   <div layout-gt-sm="row" tdMediaToggle="gt-xs" [mediaClasses]="['push-sm']">
-    <div flex-gt-sm="60">
+    <div flex-gt-sm="30">
       <md-card>
         <md-card-title>Test Configuration</md-card-title>
         <md-card-subtitle>Scope selection</md-card-subtitle>
         <md-divider></md-divider>
+        <form>
+          <md-select flex-gt-sm="70" placeholder="Select Image">
+
+          </md-select>
+
+        </form>
+        <md-divider></md-divider>
         <button md-raised-button class="text-upper" (click)="createAndRunTest()">Button Container</button>
-        <button md-raised-button class="text-upper" (click)="sendMessage()">SendMessager</button>
-
-
+        <!--button md-raised-button class="text-upper" (click)="sendMessage()">SendMessager</button-->
       </md-card>
     </div>
-    <div flex-gt-sm="40">
+    <div flex-gt-sm="20">
       <md-card>
-        <md-card-title>Log</md-card-title>
+        <md-card-title>Test Results</md-card-title>
         <md-card-subtitle>Items requiring attention</md-card-subtitle>
 
         <md-divider></md-divider>
@@ -32,13 +37,12 @@
         </md-card-actions>
       </md-card>
     </div>
-  </div>
-  <div layout-gt-sm="row" tdMediaToggle="gt-xs" [mediaClasses]="['push-sm']">
-    <div flex-gt-sm="60">
+
+    <div flex-gt-sm="50">
       <md-card>
-        <md-card-title>Test Results</md-card-title>
+        <md-card-title>Log</md-card-title>
         <md-divider></md-divider>
-        <md-card-content>
+        <md-card-content style="height: 200px; overflow-y: auto">
           <ul>
             <li *ngFor="let trace of traces">
               {{trace.trace}}
@@ -48,6 +52,9 @@
         </md-card-content>
       </md-card>
     </div>
+  </div>
+  <div layout-gt-sm="row" tdMediaToggle="gt-xs" [mediaClasses]="['push-sm']">
+
   </div>
   <td-layout-footer>
     <div layout="row" layout-align="start center">

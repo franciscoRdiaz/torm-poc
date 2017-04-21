@@ -3,7 +3,7 @@
  */
 import {Injectable} from "@angular/core";
 import { StompService } from 'ng2-stomp-service';
-import {LogTrace} from "./LogTrace";
+import {LogTrace} from "./log-trace";
 
 @Injectable()
 export class StompWSManager{
@@ -39,6 +39,8 @@ export class StompWSManager{
        * @param {object} headers: optional headers.
        */
       this.subscription = this.stomp.subscribe('/topic/logs', this.response);
+      this.subscription = this.stomp.subscribe('/topic/endExecutionTest', this.processEndExecutionTest);
+
     });
   }
 
@@ -83,5 +85,10 @@ export class StompWSManager{
   public response = (data) => {
     console.log(data);
     this.traces.push(data);
+  }
+
+  // Response
+  public processEndExecutionTest = (data) => {
+    console.log(data);
   }
 }

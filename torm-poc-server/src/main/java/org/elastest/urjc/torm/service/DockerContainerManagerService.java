@@ -1,18 +1,20 @@
 package org.elastest.urjc.torm.service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
 
 import org.apache.maven.plugins.surefire.report.ReportTestSuite;
 import org.apache.maven.plugins.surefire.report.SurefireReportParser;
 import org.apache.maven.reporting.MavenReportException;
 import org.elastest.urjc.torm.api.data.DockerContainerInfo;
+import org.elastest.urjc.torm.api.data.EndExecutionMessage;
 import org.elastest.urjc.torm.utils.ExecStartResultCallbackWebsocket;
+import org.elastest.urjc.torm.utils.StompMessageSenderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -39,22 +41,26 @@ public class DockerContainerManagerService {
 	private static final String image = "edujgurjc/torm-test-01";
 	private static final String volumeDirectory = "/reports";
 	private static final String appDirectory = "/torm/torm-test-01";
+	private static final String topicEndExecutionMessage = "/topic/endExecutionTest";
+	private static final String topicLogTrace = "/topic/logs";
 
 	@Autowired
 	private ExecStartResultCallbackWebsocket execStartResultCallbackWebsocket;
+	
+	@Autowired
+	private StompMessageSenderService stompMessageSenderService;
 
 	private DockerClient dockerClient;
 	private CreateContainerResponse container;
 
 	public DockerContainerInfo createDockerContainer() {
 
-		this.dockerClient = DockerClientBuilder.getInstance().build();
+		//this.dockerClient = DockerClientBuilder.getInstance().build();
 
-		// DockerClientConfig config =
-		// DefaultDockerClientConfig.createDefaultConfigBuilder()
-		// .withDockerHost("tcp://192.168.99.100:2376")
-		// .build();
-		// this.dockerClient = DockerClientBuilder.getInstance(config).build();
+		 DockerClientConfig config = DefaultDockerClientConfig.createDefaultConfigBuilder()
+		 .withDockerHost("tcp://192.168.99.100:2376")
+		 .build();
+		 this.dockerClient = DockerClientBuilder.getInstance(config).build();
 
 		Info info = this.dockerClient.infoCmd().exec();
 		System.out.println("Info: " + info);
@@ -94,7 +100,7 @@ public class DockerContainerManagerService {
 
 		try {
 
-			file = new FileWriter("/var" + appDirectory + "/log.txt");
+			file = new FileWriter("D:/logs/torm/log.txt");
 			pw = new PrintWriter(file);
 
 			ExecStartResultCallbackWebsocket loggingCallback = execStartResultCallbackWebsocket;
@@ -122,10 +128,12 @@ public class DockerContainerManagerService {
 		}
 		
 		this.saveTestSuite();
+		stompMessageSenderService.sendStompMessage(topicEndExecutionMessage, new EndExecutionMessage("END"));
+		
 	}
 
 	public void saveTestSuite() {
-		File surefireXML = new File("/var" + appDirectory + "/surefire-reports/");
+		File surefireXML = new File("D:/logs/torm/");
 		List<File> reportsDir = new ArrayList<>();
 		reportsDir.add(surefireXML);
 
@@ -136,7 +144,7 @@ public class DockerContainerManagerService {
 			ObjectMapper mapper = new ObjectMapper();
 			//Object to JSON in file
 			try {
-				mapper.writeValue(new File("/var" + appDirectory + "/testsuites.json"), testSuites);
+				mapper.writeValue(new File("D:/logs/torm/testsuites.json"), testSuites);
 			} catch (JsonGenerationException e) {
 				e.printStackTrace();
 			} catch (JsonMappingException e) {
