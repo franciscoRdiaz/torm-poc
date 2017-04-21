@@ -15,9 +15,15 @@ export class TestManagerService {
   }
 
   getTestResults(){
+    console.log("Invoking api rest to get the test results");
     let url = 'http://localhost:8080/containers/testInfo';
     return this.http.get(url)
-      .map(response => this.createTestInfo(response.json()))
+      .map(response =>{
+        console.log("Realizada la petición.");
+        this.createTestInfo(response.json());
+      },
+        error => console.log(error)
+      )
   }
 
   createTest( testInfo: any ) {

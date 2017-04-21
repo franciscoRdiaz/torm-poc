@@ -35,6 +35,7 @@ public class DockerContainerManagerController {
 		return dockerContainerManagerService.createDockerContainer();
 	}
 
+	@CrossOrigin(origins = "http://localhost:4200")
 	@RequestMapping(value = "/id", method = RequestMethod.PUT)
 	@ResponseStatus(HttpStatus.OK)
 	public DockerContainerInfo startDockerContainer(@PathVariable String id,
@@ -44,6 +45,7 @@ public class DockerContainerManagerController {
 		return dockerContainerInfo;
 	}
 
+	@CrossOrigin(origins = "http://localhost:4200")
 	@RequestMapping(value = "/testInfo", method = RequestMethod.GET)
 	@ResponseStatus(HttpStatus.OK)
 	public String getTestResults() {

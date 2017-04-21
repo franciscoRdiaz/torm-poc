@@ -4,6 +4,7 @@
 import {Injectable} from "@angular/core";
 import { StompService } from 'ng2-stomp-service';
 import {LogTrace} from "./log-trace";
+import {TestManagerService} from "./test-manager.service";
 
 @Injectable()
 export class StompWSManager{
@@ -17,7 +18,9 @@ export class StompWSManager{
 
   traces: LogTrace[] = [];
 
-  constructor(private stomp: StompService){}
+  endExecution: boolean = false;
+
+  constructor(private stomp: StompService, private testManagerService: TestManagerService){}
 
   configWSConnection(host: string){
     this.wsConf.host = host;
@@ -90,5 +93,12 @@ export class StompWSManager{
   // Response
   public processEndExecutionTest = (data) => {
     console.log(data);
+    this.endExecution = true;
+    this.testManagerService.getTestResults().subscribe(
+      testResults => {
+        console.log()
+      }
+    );
+    console.log("Invoked getTestResults");
   }
 }
