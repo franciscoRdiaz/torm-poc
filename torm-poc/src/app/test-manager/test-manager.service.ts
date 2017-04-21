@@ -14,8 +14,10 @@ export class TestManagerService {
       .map(response => this.createTestInfo(response.json()))
   }
 
-  testingWSRest(){
-
+  getTestResults(){
+    let url = 'http://localhost:8080/containers/testInfo';
+    return this.http.get(url)
+      .map(response => this.createTestInfo(response.json()))
   }
 
   createTest( testInfo: any ) {

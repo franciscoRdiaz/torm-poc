@@ -7,17 +7,18 @@ import org.elastest.urjc.torm.api.data.LogTrace;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import com.github.dockerjava.api.model.Frame;
 import com.github.dockerjava.core.async.ResultCallbackTemplate;
-import com.github.dockerjava.core.command.ExecStartResultCallback;
 
 @Service
-public class ExecStartResultCallbackWebsocket extends ResultCallbackTemplate<ExecStartResultCallback, Frame> {
+@Scope("prototype")
+public class ExecStartResultCallbackWebsocket extends ResultCallbackTemplate<ExecStartResultCallbackWebsocket, Frame> {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(ExecStartResultCallback.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(ExecStartResultCallbackWebsocket.class);
 	
 	@Autowired
 	private  SimpMessagingTemplate messagingTemplate;

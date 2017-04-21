@@ -16,6 +16,7 @@ import org.elastest.urjc.torm.api.data.EndExecutionMessage;
 import org.elastest.urjc.torm.utils.ExecStartResultCallbackWebsocket;
 import org.elastest.urjc.torm.utils.StompMessageSenderService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.core.JsonGenerationException;
@@ -44,8 +45,11 @@ public class DockerContainerManagerService {
 	private static final String topicEndExecutionMessage = "/topic/endExecutionTest";
 	private static final String topicLogTrace = "/topic/logs";
 
+//	@Autowired
+//	private ExecStartResultCallbackWebsocket execStartResultCallbackWebsocket;
+	
 	@Autowired
-	private ExecStartResultCallbackWebsocket execStartResultCallbackWebsocket;
+    private ApplicationContext context;
 	
 	@Autowired
 	private StompMessageSenderService stompMessageSenderService;
@@ -103,13 +107,14 @@ public class DockerContainerManagerService {
 			file = new FileWriter("D:/logs/torm/log.txt");
 			pw = new PrintWriter(file);
 
-			ExecStartResultCallbackWebsocket loggingCallback = execStartResultCallbackWebsocket;
+			ExecStartResultCallbackWebsocket execStartResultCallbackWebsocket = context.getBean(ExecStartResultCallbackWebsocket.class);			
 			execStartResultCallbackWebsocket.setStdout(pw);
 			execStartResultCallbackWebsocket.setStderr(pw);
 
 			try {
 				this.dockerClient.logContainerCmd(this.container.getId()).withStdErr(true).withStdOut(true)
-						.withFollowStream(true).exec(loggingCallback).awaitCompletion();
+						.withFollowStream(true).exec(execStartResultCallbackWebsocket).awaitCompletion();
+								
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
@@ -128,7 +133,7 @@ public class DockerContainerManagerService {
 		}
 		
 		this.saveTestSuite();
-		stompMessageSenderService.sendStompMessage(topicEndExecutionMessage, new EndExecutionMessage("END"));
+		stompMessageSenderService.sendStompMessage(topicEndExecutionMessage, new EndExecutionMessage("END"));		
 		
 	}
 

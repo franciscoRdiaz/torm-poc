@@ -51,7 +51,7 @@ public class DockerContainerManagerController {
 		testResult = "";
 		InputStream fis;
 		try {
-			fis = new FileInputStream("/var/torm/torm-test-01/testsuites.json");
+			fis = new FileInputStream("D:/logs/torm/testsuites.json");
 			InputStreamReader isr = new InputStreamReader(fis, Charset.forName("UTF-8"));
 			BufferedReader br = new BufferedReader(isr);
 			try {
