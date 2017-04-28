@@ -37,6 +37,7 @@ import {TestManagerService} from "./test-manager/test-manager.service";
 
 import {StompService} from "ng2-stomp-service";
 import {StompWSManager} from "./test-manager/stomp-ws-manager.service";
+import {Angular2AutoScroll} from "angular2-auto-scroll/lib/angular2-auto-scroll.directive";
 
 const httpInterceptorProviders: Type<any>[] = [
   RequestInterceptor,
@@ -63,6 +64,7 @@ const httpInterceptorProviders: Type<any>[] = [
     EmailTemplateComponent,
     EditorTemplateComponent,
     TestManagerComponent,
+    Angular2AutoScroll,
   ], // directives, components, and pipes owned by this NgModule
   imports: [
     BrowserModule,

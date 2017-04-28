@@ -43,6 +43,7 @@ export class StompWSManager{
        */
       this.subscription = this.stomp.subscribe('/topic/logs', this.response);
       this.subscription = this.stomp.subscribe('/topic/endExecutionTest', this.processEndExecutionTest);
+      this.subscription = this.stomp.subscribe('/topic/urlsVNC', this.loadUrl);
 
     });
   }
@@ -96,9 +97,14 @@ export class StompWSManager{
     this.endExecution = true;
     this.testManagerService.getTestResults().subscribe(
       testResults => {
-        console.log()
+        console.log(testResults);
       }
     );
     console.log("Invoked getTestResults");
+  }
+
+  public loadUrl = (data) =>{
+    console.log("Load Url:" + data);
+    window.open(data);
   }
 }

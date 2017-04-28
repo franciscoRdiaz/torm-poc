@@ -4,14 +4,13 @@
 
 export class TestInfo {
 
-  private _id: string;
+  public id: string;
+
+ // private _name: string;
+
+  public imageName: string;
+
+  public testUrl: string;
 
 
-  get id(): string {
-    return this._id;
-  }
-
-  set id(value: string) {
-    this._id = value;
-  }
 }

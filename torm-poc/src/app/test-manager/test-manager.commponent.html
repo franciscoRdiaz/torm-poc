@@ -42,7 +42,7 @@
       <md-card>
         <md-card-title>Log</md-card-title>
         <md-divider></md-divider>
-        <md-card-content style="height: 200px; overflow-y: auto">
+        <md-card-content #scrollMe style="height: 200px; font-family: Consolas, 'Liberation Mono', Menlo, Courier, monospace; overflow-y: auto">
           <ul>
             <li *ngFor="let trace of traces">
               {{trace.trace}}
