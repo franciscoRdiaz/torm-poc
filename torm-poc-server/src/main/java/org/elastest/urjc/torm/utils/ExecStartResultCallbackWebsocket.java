@@ -1,5 +1,7 @@
 package org.elastest.urjc.torm.utils;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 
@@ -11,6 +13,7 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.dockerjava.api.model.Frame;
 import com.github.dockerjava.core.async.ResultCallbackTemplate;
 
@@ -56,14 +59,30 @@ public class ExecStartResultCallbackWebsocket extends ResultCallbackTemplate<Exe
 		String frameString = frame.toString();
 		
 		LogTrace trace = new LogTrace(frameString);
-		afterTradeExecuted(trace);
+		afterTradeExecuted(trace, "/topic/logs");
 		
 		pw.println(frameString);
+		
+		ObjectMapper mapper = new ObjectMapper();
+		if (frameString.contains("urlvnc")){
+			String[] cadenas = frameString.split(" ");
+			cadenas[2] = cadenas[2].replace("localhost", "192.168.99.101");
+			sendUrlVnc(mapper.writeValueAsString(cadenas[2]), "/topic/urlsVNC");
+			//sendUrlVnc("{\"testUrl' : '"+cadenas[2]+"'}", "/topic/urlsVNC");
+		}
+	}
+	
+	public void sendUrlVnc(String urlVnc, String topic) {
+		try{
+			this.messagingTemplate.convertAndSend(topic, urlVnc);
+		}catch(Exception e){
+			e.printStackTrace();
+		}
 	}
     
-	public void afterTradeExecuted(LogTrace trace) {
+	public void afterTradeExecuted(LogTrace trace, String topic) {
 		try{
-			this.messagingTemplate.convertAndSend("/topic/logs", trace.toJSON());
+			this.messagingTemplate.convertAndSend(topic, trace.toJSON());
 		}catch(Exception e){
 			e.printStackTrace();
 		}

@@ -11,7 +11,7 @@ import java.util.Locale;
 import org.apache.maven.plugins.surefire.report.ReportTestSuite;
 import org.apache.maven.plugins.surefire.report.SurefireReportParser;
 import org.apache.maven.reporting.MavenReportException;
-import org.elastest.urjc.torm.api.data.DockerContainerInfo;
+import org.elastest.urjc.torm.api.data.TestExecutionInfo;
 import org.elastest.urjc.torm.api.data.EndExecutionMessage;
 import org.elastest.urjc.torm.utils.ExecStartResultCallbackWebsocket;
 import org.elastest.urjc.torm.utils.StompMessageSenderService;
@@ -57,12 +57,12 @@ public class DockerContainerManagerService {
 	private DockerClient dockerClient;
 	private CreateContainerResponse container;
 
-	public DockerContainerInfo createDockerContainer() {
+	public TestExecutionInfo executeTest() {
 
 		//this.dockerClient = DockerClientBuilder.getInstance().build();
 
 		 DockerClientConfig config = DefaultDockerClientConfig.createDefaultConfigBuilder()
-		 .withDockerHost("tcp://192.168.99.100:2376")
+		 .withDockerHost("tcp://192.168.99.101:2376")
 		 .build();
 		 this.dockerClient = DockerClientBuilder.getInstance(config).build();
 
@@ -86,7 +86,7 @@ public class DockerContainerManagerService {
 
 		this.manageLogs();
 
-		DockerContainerInfo dockerContainerInfo = new DockerContainerInfo();
+		TestExecutionInfo dockerContainerInfo = new TestExecutionInfo();
 		dockerContainerInfo.setId(this.container.getId());
 
 		try {
