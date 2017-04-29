@@ -4,6 +4,7 @@ import {TestInfo} from "./test-info";
 import {StompWSManager} from "./stomp-ws-manager.service";
 import {LogTrace} from "./log-trace";
 import {Image} from "./image";
+import {Subscription} from 'rxjs/Subscription';
 
 
 @Component({
@@ -18,6 +19,8 @@ export class TestManagerComponent implements  OnInit, OnDestroy, AfterViewChecke
   testInfo: TestInfo = undefined;
   traces: LogTrace[] = [];
   images: Image[] = [];
+  urlNoVNCClient: string;
+  subscription:Subscription;
 
   constructor(private testManagerService: TestManagerService, private stompWSManager: StompWSManager) {
     /* TODO: in the future, fill it with the database content */
@@ -28,11 +31,15 @@ export class TestManagerComponent implements  OnInit, OnDestroy, AfterViewChecke
   ngOnInit(){
     this.stompWSManager.configWSConnection('/logs');
     this.stompWSManager.startWsConnection();
-    this.traces = this.stompWSManager.traces;
+    this.urlNoVNCClient = this.stompWSManager.urlNoVNCClient[this.stompWSManager.urlNoVNCClient.length - 1];
+    this.scrollToBottom();
+    this.subscription = this.stompWSManager.navItem$
+      .subscribe(item => setTimeout(()=>{this.urlNoVNCClient = item}, 5000) )
   }
 
   ngOnDestroy(){
     this.stompWSManager.disconnectWSConnection();
+    this.subscription.unsubscribe();
   }
 
   ngAfterViewChecked() {
@@ -42,7 +49,9 @@ export class TestManagerComponent implements  OnInit, OnDestroy, AfterViewChecke
   scrollToBottom(): void {
     try {
       this.myScrollContainer.nativeElement.scrollTop = this.myScrollContainer.nativeElement.scrollHeight;
-    } catch(err) { }
+    } catch(err) {
+      console.log("[Error]:" + err.toString());
+    }
   }
 
 
@@ -63,5 +72,6 @@ export class TestManagerComponent implements  OnInit, OnDestroy, AfterViewChecke
   sendMessage(){
     this.stompWSManager.sendWSMessage();
   }
+
 
 }

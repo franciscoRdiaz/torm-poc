@@ -6,54 +6,76 @@
     <a md-icon-button mdTooltip="Github" href="https://github.com/teradata/covalent" target="_blank"><md-icon svgIcon="assets:github"></md-icon></a>
   </div>
   <div layout-gt-sm="row" tdMediaToggle="gt-xs" [mediaClasses]="['push-sm']">
-    <div flex-gt-sm="30">
-      <md-card>
-        <md-card-title>Test Configuration</md-card-title>
-        <md-card-subtitle>Scope selection</md-card-subtitle>
-        <md-divider></md-divider>
-        <form>
-          <md-select flex-gt-sm="70" placeholder="Select Image">
+    <div flex-gt-sm="40" layout-gt-sm="column">
+      <!--div flex-gt-sm="30" -->
+        <!--md-card>
+          <md-card-title>Test Configuration</md-card-title>
+          <md-card-subtitle>Scope selection</md-card-subtitle>
+          <md-divider></md-divider>
+          <form>
+            <md-select flex-gt-sm="70" placeholder="Select Image">
 
-          </md-select>
+            </md-select>
 
-        </form>
-        <md-divider></md-divider>
-        <button md-raised-button class="text-upper" (click)="createAndRunTest()">Button Container</button>
-        <!--button md-raised-button class="text-upper" (click)="sendMessage()">SendMessager</button-->
-      </md-card>
+          </form>
+          <md-divider></md-divider>
+          <button md-raised-button class="text-upper" (click)="createAndRunTest()">Button Container</button>
+          <!--button md-raised-button class="text-upper" (click)="sendMessage()">SendMessager</button>
+        </md-card-->
+
+        <md-card flex-gt-sm="100" >
+          <md-card-title>View Browser Test</md-card-title>
+          <md-card-subtitle>Wait for noVnc client start</md-card-subtitle>
+          <md-divider></md-divider>
+          <!--div flex-gt-sm="100">
+            <iframe height="500" width="100%" [src]="urlNoVNCClient | safe"></iframe>
+          </div-->
+          <div id="parent" flex-gt-sm="100" style="position:relative">
+            <!--div id="wrapper" style="position:relative" -->
+              <iframe name="ifTestView" style="width:100%;height:100%;" scrolling="no" frameborder="no" [src]="urlNoVNCClient | safe"></iframe>
+            <!--/div-->
+          </div>
+
+
+        </md-card>
+
+      <!--/div-->
+      <!--div flex-gt-sm="20"-->
+        <md-card>
+          <md-card-title>Test Results</md-card-title>
+          <md-card-subtitle>Items requiring attention</md-card-subtitle>
+
+          <md-divider></md-divider>
+
+          <md-divider></md-divider>
+          <md-card-actions>
+            <a md-button color="accent" class="text-upper" [routerLink]="['/logs']">
+              <span>View More</span>
+            </a>
+          </md-card-actions>
+        </md-card>
+      <!--/div-->
     </div>
-    <div flex-gt-sm="20">
-      <md-card>
-        <md-card-title>Test Results</md-card-title>
-        <md-card-subtitle>Items requiring attention</md-card-subtitle>
 
-        <md-divider></md-divider>
+    <div flex-gt-sm="60" layout-gt-sm="column">
+      <div flex-gt-sm="100">
+        <md-card>
+          <md-card-title>Log</md-card-title>
+          <md-divider></md-divider>
+          <md-card-content #scrollMe style="height: 500px; font-family: Consolas, 'Liberation Mono', Menlo, Courier, monospace; overflow-y: auto">
+            <ul>
+              <li *ngFor="let trace of traces">
+                {{trace.trace}}
+              </li>
+            </ul>
 
-        <md-divider></md-divider>
-        <md-card-actions>
-          <a md-button color="accent" class="text-upper" [routerLink]="['/logs']">
-            <span>View More</span>
-          </a>
-        </md-card-actions>
-      </md-card>
+          </md-card-content>
+        </md-card>
+      </div>
     </div>
 
-    <div flex-gt-sm="50">
-      <md-card>
-        <md-card-title>Log</md-card-title>
-        <md-divider></md-divider>
-        <md-card-content #scrollMe style="height: 200px; font-family: Consolas, 'Liberation Mono', Menlo, Courier, monospace; overflow-y: auto">
-          <ul>
-            <li *ngFor="let trace of traces">
-              {{trace.trace}}
-            </li>
-          </ul>
-
-        </md-card-content>
-      </md-card>
-    </div>
   </div>
-  <div layout-gt-sm="row" tdMediaToggle="gt-xs" [mediaClasses]="['push-sm']">
+  <div layout-gt-sm="column" tdMediaToggle="gt-xs" [mediaClasses]="['push-sm']">
 
   </div>
   <td-layout-footer>

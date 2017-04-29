@@ -33,11 +33,11 @@ import {NgxChartsModule} from "@swimlane/ngx-charts";
 
 import {TestManagerComponent} from "./test-manager/test-manager.commponent";
 import {TestManagerService} from "./test-manager/test-manager.service";
-;
+
 
 import {StompService} from "ng2-stomp-service";
 import {StompWSManager} from "./test-manager/stomp-ws-manager.service";
-import {Angular2AutoScroll} from "angular2-auto-scroll/lib/angular2-auto-scroll.directive";
+import {SafeUrlPipe} from "./test-manager/sanitizer.pipe";
 
 const httpInterceptorProviders: Type<any>[] = [
   RequestInterceptor,
@@ -64,7 +64,7 @@ const httpInterceptorProviders: Type<any>[] = [
     EmailTemplateComponent,
     EditorTemplateComponent,
     TestManagerComponent,
-    Angular2AutoScroll,
+    SafeUrlPipe,
   ], // directives, components, and pipes owned by this NgModule
   imports: [
     BrowserModule,

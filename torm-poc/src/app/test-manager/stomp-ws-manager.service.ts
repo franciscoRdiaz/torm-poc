@@ -5,6 +5,7 @@ import {Injectable} from "@angular/core";
 import { StompService } from 'ng2-stomp-service';
 import {LogTrace} from "./log-trace";
 import {TestManagerService} from "./test-manager.service";
+import {BehaviorSubject} from 'rxjs/BehaviorSubject';
 
 @Injectable()
 export class StompWSManager{
@@ -20,10 +21,17 @@ export class StompWSManager{
 
   endExecution: boolean = false;
 
+  urlNoVNCClient: string[] = [];
+
+  private _navItemSource = new BehaviorSubject<string>("");
+
+  navItem$ = this._navItemSource.asObservable();
+
   constructor(private stomp: StompService, private testManagerService: TestManagerService){}
 
   configWSConnection(host: string){
     this.wsConf.host = host;
+    this.urlNoVNCClient.push('');
     this.stomp.configure(this.wsConf);
   }
 
@@ -105,6 +113,10 @@ export class StompWSManager{
 
   public loadUrl = (data) =>{
     console.log("Load Url:" + data);
-    window.open(data);
+    // this.urlNoVNCClient = data;
+    // this.urlNoVNCClient[0] = "http://www.elpais.com";
+    this._navItemSource.next(data);
+    //window.open(data);
   }
+
 }
