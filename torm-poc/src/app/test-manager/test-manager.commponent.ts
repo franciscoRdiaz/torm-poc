@@ -32,9 +32,13 @@ export class TestManagerComponent implements  OnInit, OnDestroy, AfterViewChecke
     this.stompWSManager.configWSConnection('/logs');
     this.stompWSManager.startWsConnection();
     this.urlNoVNCClient = this.stompWSManager.urlNoVNCClient[this.stompWSManager.urlNoVNCClient.length - 1];
+    this.traces = this.stompWSManager.traces;
+    if (this.traces.length > 0){
+      this.traces.splice(0, this.stompWSManager.traces.length);
+    }
     this.scrollToBottom();
     this.subscription = this.stompWSManager.navItem$
-      .subscribe(item => setTimeout(()=>{this.urlNoVNCClient = item}, 5000) )
+      .subscribe(item => this.waitingForLoadNoVncClient(item) )
   }
 
   ngOnDestroy(){
@@ -67,6 +71,10 @@ export class TestManagerComponent implements  OnInit, OnDestroy, AfterViewChecke
         },
         error => console.error("Error:" + error)
       );
+  }
+
+  waitingForLoadNoVncClient(item: string){
+    setTimeout(()=>{this.urlNoVNCClient = item}, 5000);
   }
 
   sendMessage(){

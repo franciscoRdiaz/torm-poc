@@ -6,6 +6,7 @@ import { StompService } from 'ng2-stomp-service';
 import {LogTrace} from "./log-trace";
 import {TestManagerService} from "./test-manager.service";
 import {BehaviorSubject} from 'rxjs/BehaviorSubject';
+import {Http} from "@angular/http";
 
 @Injectable()
 export class StompWSManager{
@@ -27,7 +28,7 @@ export class StompWSManager{
 
   navItem$ = this._navItemSource.asObservable();
 
-  constructor(private stomp: StompService, private testManagerService: TestManagerService){}
+  constructor(private stomp: StompService, private testManagerService: TestManagerService, private http: Http){}
 
   configWSConnection(host: string){
     this.wsConf.host = host;
@@ -115,6 +116,14 @@ export class StompWSManager{
     console.log("Load Url:" + data);
     // this.urlNoVNCClient = data;
     // this.urlNoVNCClient[0] = "http://www.elpais.com";
+
+    this.http.get(data)
+      .map(response =>{
+          console.log("Realizada la petición:"+response);
+        },
+        error => console.log(error)
+      )
+
     this._navItemSource.next(data);
     //window.open(data);
   }
