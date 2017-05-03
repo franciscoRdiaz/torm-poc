@@ -1,3 +1,4 @@
+import { TestResult } from './test-result';
 /**
  * Created by frdiaz on 19/04/2017.
  */
@@ -23,10 +24,13 @@ export class StompWSManager{
   endExecution: boolean = false;
 
   urlNoVNCClient: string[] = [];
+  testResult: TestResult = new TestResult("","","","");
 
   private _navItemSource = new BehaviorSubject<string>("");
+  private _testResultSource = new BehaviorSubject<TestResult>(this.testResult);
 
   navItem$ = this._navItemSource.asObservable();
+  testResult$ = this._testResultSource.asObservable();
 
   constructor(private stomp: StompService, private testManagerService: TestManagerService, private http: Http){}
 
@@ -107,6 +111,8 @@ export class StompWSManager{
     this.testManagerService.getTestResults().subscribe(
       testResults => {
         console.log(testResults);
+        this.testResult = testResults;
+        this._testResultSource.next(this.testResult);
       }
     );
     console.log("Invoked getTestResults");

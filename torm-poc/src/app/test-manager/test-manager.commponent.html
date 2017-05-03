@@ -46,7 +46,15 @@
           <md-card-subtitle>Wait for the test to finish</md-card-subtitle>
 
           <md-divider></md-divider>
-
+          <md-card-content>
+            <ul>
+              <li>Number of tests: {{testResult.tests}}</li>
+              <li>Errors: {{testResult.errors}}</li>
+              <li>Failures: {{testResult.failures}}</li>
+              <li>Skipped: {{testResult.skipped}}</li>
+            </ul>
+            
+          </md-card-content>
           <md-divider></md-divider>
 
         </md-card>

@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import {Http, Response} from '@angular/http';
 import {TestInfo} from './test-info';
+import {TestResult} from './test-result';
 import 'rxjs/Rx';
 
 @Injectable()
@@ -19,10 +20,8 @@ export class TestManagerService {
     console.log("Invoking api rest to get the test results");
     let url = 'http://localhost:8090/containers/testInfo';
     return this.http.get(url)
-      .map(response =>{
-        console.log("Realizada la petición." + response);
-        this.createTestInfo(response.json());
-      },
+      .map(
+        response => this.createTestInfo(response.json()),
         error => console.log(error)
       )
   }
@@ -37,6 +36,7 @@ export class TestManagerService {
 
   createTestInfo(testInfo: any[]) {
     console.log("Test info retrives:" +testInfo[0].numberOfErrors);
-    return testInfo;
+    var testResult = new TestResult(testInfo[0].numberOfTests, testInfo[0].numberOfErrors, testInfo[0].numberOfFailures, testInfo[0].numberOfSkipped);
+    return testResult;
   }
 }

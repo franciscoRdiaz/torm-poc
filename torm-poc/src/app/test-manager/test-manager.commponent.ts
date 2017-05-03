@@ -1,3 +1,4 @@
+import { TestResult } from './test-result';
 import {AfterViewChecked, Component, ElementRef, OnDestroy, OnInit, ViewChild} from "@angular/core";
 import {TestManagerService} from "./test-manager.service";
 import {TestInfo} from "./test-info";
@@ -17,10 +18,12 @@ export class TestManagerComponent implements  OnInit, OnDestroy, AfterViewChecke
   @ViewChild('scrollMe') private myScrollContainer: ElementRef;
 
   testInfo: TestInfo = undefined;
+  testResult: TestResult
   traces: LogTrace[] = [];
   images: Image[] = [];
   urlNoVNCClient: string;
   subscription:Subscription;
+  subscripTestResults: Subscription;
 
   constructor(private testManagerService: TestManagerService, private stompWSManager: StompWSManager) {
     /* TODO: in the future, fill it with the database content */
@@ -32,13 +35,19 @@ export class TestManagerComponent implements  OnInit, OnDestroy, AfterViewChecke
     this.stompWSManager.configWSConnection('/logs');
     this.stompWSManager.startWsConnection();
     this.urlNoVNCClient = this.stompWSManager.urlNoVNCClient[this.stompWSManager.urlNoVNCClient.length - 1];
+   
     this.traces = this.stompWSManager.traces;
     if (this.traces.length > 0){
       this.traces.splice(0, this.stompWSManager.traces.length);
     }
     this.scrollToBottom();
     this.subscription = this.stompWSManager.navItem$
-      .subscribe(item => this.waitingForLoadNoVncClient(item) )
+      .subscribe(item => this.waitingForLoadNoVncClient(item) );
+
+    this.subscripTestResults = this.stompWSManager.testResult$
+    .subscribe(item => this.testResult = item);
+
+
   }
 
   ngOnDestroy(){
