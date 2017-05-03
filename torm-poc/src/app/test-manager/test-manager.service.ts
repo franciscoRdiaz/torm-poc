@@ -20,7 +20,7 @@ export class TestManagerService {
     let url = 'http://localhost:8090/containers/testInfo';
     return this.http.get(url)
       .map(response =>{
-        console.log("Realizada la petición.");
+        console.log("Realizada la petición." + response);
         this.createTestInfo(response.json());
       },
         error => console.log(error)
@@ -35,7 +35,8 @@ export class TestManagerService {
     return 1;
   }
 
-  createTestInfo(testInfo: any) {
+  createTestInfo(testInfo: any[]) {
+    console.log("Test info retrives:" +testInfo[0].numberOfErrors);
     return testInfo;
   }
 }

@@ -59,7 +59,7 @@ export class TestManagerComponent implements  OnInit, OnDestroy, AfterViewChecke
   }
 
 
-  createAndRunTest(){
+  /*createAndRunTest(){
     this.stompWSManager.traces.splice(0, this.stompWSManager.traces.length);
     this.testInfo = new TestInfo();
     this.testInfo.imageName = this.images[1].name;
@@ -71,7 +71,7 @@ export class TestManagerComponent implements  OnInit, OnDestroy, AfterViewChecke
         },
         error => console.error("Error:" + error)
       );
-  }
+  }*/
 
   waitingForLoadNoVncClient(item: string){
     setTimeout(()=>{this.urlNoVNCClient = item}, 5000);
