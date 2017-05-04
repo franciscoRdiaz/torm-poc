@@ -83,7 +83,7 @@ export class TestManagerComponent implements  OnInit, OnDestroy, AfterViewChecke
   }*/
 
   waitingForLoadNoVncClient(item: string){
-    setTimeout(()=>{this.urlNoVNCClient = item}, 5000);
+    setTimeout(()=>{this.urlNoVNCClient = item}, 6000);
   }
 
   sendMessage(){
