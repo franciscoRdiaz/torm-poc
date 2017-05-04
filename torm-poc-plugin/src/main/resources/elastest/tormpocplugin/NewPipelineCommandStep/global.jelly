@@ -13,9 +13,8 @@
     so it should be straightforward to find them.
   -->
   <f:section title="Elastest Pipeline Plugin ">
-    <f:entry title="French" field="useFrench"
-      description="Check if we should say hello in French">
-      <f:checkbox />
+    <f:entry title="Elastest host" field="elastestHost" description="Elastest Server Host">
+	   <f:textbox /> 
     </f:entry>
   </f:section>
 </j:jelly>

@@ -79,7 +79,8 @@ public class NewPipelineCommandStep extends Builder implements SimpleBuildStep {
 
 			Client client = Client.create();
 
-			WebResource webResource = client.resource("http://localhost:8090/containers/external/api/");
+			String elastestHostURL = getDescriptor().getelastestHost();
+			WebResource webResource = client.resource(elastestHostURL);
 
 			TestExecutionInfo testExecutionInfo = new TestExecutionInfo();
 			testExecutionInfo.setImageName(imageName);			
@@ -96,11 +97,6 @@ public class NewPipelineCommandStep extends Builder implements SimpleBuildStep {
 			
 			listener.getLogger().println("End test:"+imageName);
 			
-			// This also shows how you can consult the global configuration of the builder
-	        if (getDescriptor().getUseFrench())
-	            listener.getLogger().println("Bonjour, "+imageName+"!");
-	        else
-	            listener.getLogger().println("Hello, "+imageName+"!");
 
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
@@ -137,7 +133,7 @@ public class NewPipelineCommandStep extends Builder implements SimpleBuildStep {
          * <p>
          * If you don't want fields to be persisted, use {@code transient}.
          */
-        private boolean useFrench;
+        private String elastestHost;
 
         /**
          * In order to load the persisted global configuration, you have to 
@@ -186,9 +182,9 @@ public class NewPipelineCommandStep extends Builder implements SimpleBuildStep {
         public boolean configure(StaplerRequest req, JSONObject formData) throws FormException {
             // To persist global configuration information,
             // set that to properties and call save().
-            useFrench = formData.getBoolean("useFrench");
+            elastestHost = formData.getString("elastestHost");
             // ^Can also use req.bindJSON(this, formData);
-            //  (easier when there are many fields; need set* methods for this, like setUseFrench)
+            //  (easier when there are many fields; need set* methods for this, like setelastestHost)
             save();
             return super.configure(req,formData);
         }
@@ -199,8 +195,8 @@ public class NewPipelineCommandStep extends Builder implements SimpleBuildStep {
          * The method name is bit awkward because global.jelly calls this method to determine
          * the initial state of the checkbox by the naming convention.
          */
-        public boolean getUseFrench() {
-            return useFrench;
+        public String getelastestHost() {
+            return elastestHost;
         }
     }
 }
