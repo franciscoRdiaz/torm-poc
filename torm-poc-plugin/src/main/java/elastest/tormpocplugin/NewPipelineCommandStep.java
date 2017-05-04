@@ -44,17 +44,24 @@ import net.sf.json.JSONObject;
 public class NewPipelineCommandStep extends Builder implements SimpleBuildStep {
 
     private final String imageName;
+    
+    private final String command;
 
     // Fields in config.jelly must match the parameter names in the "DataBoundConstructor"
     @DataBoundConstructor
-    public NewPipelineCommandStep(String name) {
-        this.imageName = name;
+    public NewPipelineCommandStep(String command,String imageName) {
+        this.imageName = imageName;
+        this.command = command;
     }
 
-    /**
+    public String getCommand() {
+		return command;
+	}
+
+	/**
      * We'll use this from the {@code config.jelly}.
      */
-    public String getName() {
+    public String getImageName() {
         return imageName;
     }
 
@@ -63,8 +70,8 @@ public class NewPipelineCommandStep extends Builder implements SimpleBuildStep {
         // This is where you 'build' the project.
         // Since this is a dummy, we just say 'hello world' and call that a build.
     	ObjectMapper objetMapper = new ObjectMapper();
-    	System.out.println("Prueba de escritura en log");
-    	listener.getLogger().println("Prueba de escritura en el log:"+imageName);
+    	System.out.println("Test writting in log");
+    	listener.getLogger().println("Test writting in log:"+imageName);
     	listener.getLogger().println("http://localhost:4200/#/test-manager");
     	
     	
@@ -87,7 +94,7 @@ public class NewPipelineCommandStep extends Builder implements SimpleBuildStep {
 			TestExecutionInfo output = objetMapper.readValue(response.getEntity(String.class), TestExecutionInfo.class);
 			System.out.println("Rest Response:"+output.getImageName());
 			
-			listener.getLogger().println("Finalización de la prueba:"+imageName);
+			listener.getLogger().println("End test:"+imageName);
 			
 			// This also shows how you can consult the global configuration of the builder
 	        if (getDescriptor().getUseFrench())
