@@ -50,6 +50,22 @@ public class TestManagerController {
 
 		return (TestExecutionInfoExt) testManagerService.executeTest(testExecutionInfoExt);
 	}
+	
+	@CrossOrigin(origins = {"http://localhost:4200", "http://localhost:8080"})
+	@RequestMapping(value = "/external/api2/", method = RequestMethod.POST)
+	@ResponseStatus(HttpStatus.CREATED)
+	public TestExecutionInfoExt asincCreateAndExecuteTest(@RequestBody TestExecutionInfoExt testExecutionInfoExt) {
+		System.out.println("Image name received" + testExecutionInfoExt.getImageName());
+		
+		//return testExecutionInfoExt;
+		Runnable r1 = () -> { testManagerService.executeTest(testExecutionInfoExt);};
+		new Thread(r1).start();
+		
+		testExecutionInfoExt.setTestUrl("http://localhost:4200/#/test-manager");
+		
+		return testExecutionInfoExt;
+	}
+
 
 	@CrossOrigin(origins = {"http://localhost:4200", "http://localhost:8080"})
 	@RequestMapping(value = "/id", method = RequestMethod.PUT)

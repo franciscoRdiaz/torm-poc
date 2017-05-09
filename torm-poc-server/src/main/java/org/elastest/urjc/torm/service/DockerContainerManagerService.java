@@ -62,7 +62,7 @@ public class DockerContainerManagerService {
 		//this.dockerClient = DockerClientBuilder.getInstance().build();
 
 		 DockerClientConfig config = DefaultDockerClientConfig.createDefaultConfigBuilder()
-		 .withDockerHost("tcp://192.168.99.101:2376")
+		 .withDockerHost("tcp://192.168.99.100:2376")
 		 .build();
 		 this.dockerClient = DockerClientBuilder.getInstance(config).build();
 

@@ -20,14 +20,16 @@ public class LogsByStompOverWSController {
 	@MessageMapping("/logs")
 	@SendTo("/topic/logs")
 	public String logsHandler(String mess) throws Exception	{
+		System.out.println("logsHandler method has received a Message.");
 		
 		Thread.sleep(10000);		
 		return "["+mess+"]: The logs would go here";
 	}
 	
-	@RequestMapping(path="/logs")	
-	public void sendLogs(String logs){
-		this.template.convertAndSend("/topic/logs","Logs:"+logs);
-	}
+//	@RequestMapping(path="/logs")	
+//	public void sendLogs(String logs){
+//		System.out.println("sendLogs method has received a Message.");
+//		this.template.convertAndSend("/topic/logs","Logs:"+logs);
+//	}
 	
 }

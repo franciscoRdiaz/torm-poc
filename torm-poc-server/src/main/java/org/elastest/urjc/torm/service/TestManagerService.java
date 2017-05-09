@@ -58,6 +58,11 @@ public class TestManagerService {
 
 	private DockerClient dockerClient;
 	private CreateContainerResponse container;
+	
+	public TestExecutionInfo createElastestTest(TestExecutionInfoExt testExecutionInfoExt){
+		testExecutionInfoExt.setTestUrl("http://localhost:4200/#/test-manager");
+		return testExecutionInfoExt;
+	}
 
 	public TestExecutionInfo executeTest(TestExecutionInfo testExecutionInfo) {
 		
@@ -68,7 +73,7 @@ public class TestManagerService {
 
 
 		 DockerClientConfig config = DefaultDockerClientConfig.createDefaultConfigBuilder()
-		 .withDockerHost("tcp://192.168.99.101:2376")
+		 .withDockerHost("tcp://192.168.99.100:2376")
 		 .build();
 		 this.dockerClient = DockerClientBuilder.getInstance(config).build();
 
