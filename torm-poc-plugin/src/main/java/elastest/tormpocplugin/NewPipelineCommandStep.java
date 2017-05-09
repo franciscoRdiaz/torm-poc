@@ -1,5 +1,10 @@
 package elastest.tormpocplugin;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
 
 import javax.servlet.ServletException;
 
@@ -7,6 +12,14 @@ import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
+import org.springframework.messaging.converter.StringMessageConverter;
+import org.springframework.web.socket.client.WebSocketClient;
+import org.springframework.web.socket.client.standard.StandardWebSocketClient;
+import org.springframework.web.socket.messaging.WebSocketStompClient;
+import org.springframework.web.socket.sockjs.client.RestTemplateXhrTransport;
+import org.springframework.web.socket.sockjs.client.SockJsClient;
+import org.springframework.web.socket.sockjs.client.Transport;
+import org.springframework.web.socket.sockjs.client.WebSocketTransport;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.jersey.api.client.Client;
@@ -46,6 +59,15 @@ public class NewPipelineCommandStep extends Builder implements SimpleBuildStep {
     private final String imageName;
     
     private final String command;
+    
+   // private static CountDownLatch latch;
+    
+    private String endMessage;
+    
+    private WSocketClientToLogs wsClientToLogs;
+    private final String webSocketAddress = "ws://localhost:8090/logs";
+    
+    
 
     // Fields in config.jelly must match the parameter names in the "DataBoundConstructor"
     @DataBoundConstructor
@@ -70,12 +92,13 @@ public class NewPipelineCommandStep extends Builder implements SimpleBuildStep {
         // This is where you 'build' the project.
         // Since this is a dummy, we just say 'hello world' and call that a build.
     	ObjectMapper objetMapper = new ObjectMapper();
-    	System.out.println("Test writting in log");
+    	
     	listener.getLogger().println("Test writting in log:"+imageName);
     	listener.getLogger().println("http://localhost:4200/#/test-manager");
     	
+    	endMessage = "";   	
     	
-		try {
+		try {			
 
 			Client client = Client.create();
 
@@ -86,14 +109,44 @@ public class NewPipelineCommandStep extends Builder implements SimpleBuildStep {
 			testExecutionInfo.setImageName(imageName);			
 
 			ClientResponse response = webResource.type("application/json").post(ClientResponse.class, testExecutionInfo.toJSON());
+			TestExecutionInfo output = objetMapper.readValue(response.getEntity(String.class), TestExecutionInfo.class);
+			listener.getLogger().println("Server Response:"+output.getTestUrl());
+			
+			//WSocketClientToLogs.latch = new CountDownLatch(1);
+			//ClientManager clientWs = ClientManager.createClient();
+			CountDownLatch waitForEndOfMessage = new CountDownLatch(1);
+						
+			try{
+				listener.getLogger().println("Start Websocket config.");
+				//WebSocketContainer container = ContainerProvider.getWebSocketContainer();
+				List<Transport> transports = new ArrayList<>(2);
+				transports.add(new WebSocketTransport(new StandardWebSocketClient()));
+				transports.add(new RestTemplateXhrTransport());
+
+				WebSocketClient webSocketClient = new SockJsClient(transports);
+				//WebSocketClient webSocketClient = new StandardWebSocketClient();
+				//WebSocketClient transport = new StandardWebSocketClient(container);
+				WebSocketStompClient stompClient = new WebSocketStompClient(webSocketClient);
+				stompClient.setMessageConverter(new StringMessageConverter());
+				LogStompSessionHandler handler = new LogStompSessionHandler(waitForEndOfMessage);	
+				listener.getLogger().println("Trying to connect 4.");
+				stompClient.connect("ws://localhost:8090/logs", handler);
+				listener.getLogger().println("Stablished connection");
+				waitForEndOfMessage.await();
+				
+				
+				 //clientWs.connectToServer(new WSocketClientToLogs(listener), new URI("ws://localhost:8090/topic/logs"));
+				 //WSocketClientToLogs.latch.await();
+			} catch (Exception e) {
+				listener.getLogger().println("Error message:"+e.getMessage() +"-Cause:"+ e.getCause());				
+	            throw new RuntimeException(e);
+	        }
+			
 
 			if (response.getStatus() != 201) {
 				throw new RuntimeException("Failed : HTTP error code : " + response.getStatus());
-			}
-
-			System.out.println("Output from Server .... \n");
-			TestExecutionInfo output = objetMapper.readValue(response.getEntity(String.class), TestExecutionInfo.class);
-			System.out.println("Rest Response:"+output.getImageName());
+			}			
+			
 			
 			listener.getLogger().println("End test:"+imageName);
 			
@@ -101,11 +154,17 @@ public class NewPipelineCommandStep extends Builder implements SimpleBuildStep {
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-			listener.getLogger().println(e.getMessage());
+			listener.getLogger().println("Error:"+e.getMessage());
 		}
 
         
     }
+    
+	private void initializeWebSocket(TaskListener listener) throws URISyntaxException {
+		// ws://localhost:7101/CinemaMonitor/cinemaSocket/
+		listener.getLogger().println("REST service: open websocket client at " + webSocketAddress);
+		wsClientToLogs = new WSocketClientToLogs(new URI(webSocketAddress), listener);
+	}
 
     // Overridden for better type safety.
     // If your plugin doesn't really define any property on Descriptor,

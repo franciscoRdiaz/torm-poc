@@ -11,7 +11,7 @@
   </parent>
   <groupId>elastest</groupId>
   <artifactId>torm-poc-plugin</artifactId>
-  <version>1.0-SNAPSHOT</version>
+  <version>0.1-SNAPSHOT</version>
   <packaging>hpi</packaging>
 
   <properties>
@@ -26,7 +26,7 @@
     <jackson.version>2.8.8</jackson.version>
   </properties>
 
-  <name>TODO Plugin</name>
+  <name>ElasTest Plugin</name>
   <description>TODO</description>
   <url>https://wiki.jenkins-ci.org/display/JENKINS/TODO+Plugin</url>
 
@@ -69,16 +69,60 @@
   </pluginRepositories>
   <!-- If you want to depend on other plugins:-->
 
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>org.springframework</groupId>
+				<artifactId>spring-websocket</artifactId>
+				<version>4.3.8.RELEASE</version>
+			</dependency>
+			<dependency>
+				<groupId>org.springframework</groupId>
+				<artifactId>spring-messaging</artifactId>
+				<version>4.3.8.RELEASE</version>
+			</dependency>
+		</dependencies>
+  
+  </dependencyManagement>
+
 	<dependencies>
+	<dependency>
+   <groupId>org.jenkins-ci.main</groupId>
+    <artifactId>jenkins-core</artifactId>
+    
+    <exclusions>
+        <exclusion>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-aop</artifactId>
+        </exclusion>
+        <exclusion>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-core</artifactId>
+        </exclusion>
+    </exclusions>
+</dependency>
+	
 		<dependency>
 			<groupId>org.jenkins-ci.plugins</groupId>
 			<artifactId>structs</artifactId>
 			<version>1.6</version>
 		</dependency>
+			
 		<dependency>
 			<groupId>org.springframework</groupId>
-			<artifactId>spring-web</artifactId>
-			<version>4.3.8.RELEASE</version>
+			<artifactId>spring-websocket</artifactId>
+			
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-messaging</artifactId>
+			
+		</dependency>
+		
+		<dependency>
+			<groupId>javax.websocket</groupId>
+			<artifactId>javax.websocket-api</artifactId>
+			<version>1.1</version>
 		</dependency>
 
 		<dependency>
@@ -87,11 +131,47 @@
     		<version>1.19.3</version>
 		</dependency>
 		
+		<!-- <dependency>
+		    <groupId>org.glassfish.tyrus</groupId>
+		    <artifactId>tyrus-client</artifactId>
+		    <version>1.13.1</version>
+		</dependency>
+		
+		https://mvnrepository.com/artifact/org.glassfish.tyrus/tyrus-server
+		<dependency>
+		    <groupId>org.glassfish.tyrus</groupId>
+		    <artifactId>tyrus-server</artifactId>
+		    <version>1.13.1</version>
+		</dependency>
+		
+		<dependency>
+		    <groupId>org.glassfish.tyrus</groupId>
+		    <artifactId>tyrus-container-servlet</artifactId>
+		    <version>1.13.1</version>
+		</dependency> -->
+		
+		<dependency>
+			<groupId>org.glassfish.tyrus.bundles</groupId>
+			<artifactId>tyrus-standalone-client</artifactId>
+			<version>1.13.1</version>
+		</dependency>
+		
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-databind</artifactId>
 			<version>${jackson.version}</version>
 		</dependency>
+	<!-- 	<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-core</artifactId>
+			<version>${jackson.version}</version>
+		</dependency> -->
+			<!-- https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-annotations -->
+		<!-- <dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-annotations</artifactId>
+			<version>${jackson.version}</version>
+		</dependency> -->
   
     <!-- dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
@@ -99,6 +179,18 @@
       <version>2.0</version>
     </dependency-->
   </dependencies>
+  
+ <!--  <build>
+  <plugins>
+    <plugin>
+      <groupId>org.jenkins-ci.tools</groupId>
+      <artifactId>maven-hpi-plugin</artifactId>
+      <configuration>
+        <pluginFirstClassLoader>true</pluginFirstClassLoader>
+      </configuration>
+    </plugin>
+  </plugins>
+</build> -->
   
 
 </project>
