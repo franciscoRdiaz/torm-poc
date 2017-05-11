@@ -17,7 +17,8 @@ export class StompWSManager {
 
   private wsConf = {
     host: '/logs',
-    debug: true
+    debug: true,
+    queue:{'init':false}
   }
 
   private subscription: any;
