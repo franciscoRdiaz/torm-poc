@@ -7,18 +7,25 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.List;
 
+import org.elastest.urjc.torm.api.data.LogFragmentContainer;
+import org.elastest.urjc.torm.api.data.LogTrace;
 import org.elastest.urjc.torm.api.data.TestExecutionInfo;
 import org.elastest.urjc.torm.api.data.TestExecutionInfoExt;
 import org.elastest.urjc.torm.service.DockerContainerManagerService;
 import org.elastest.urjc.torm.service.TestManagerService;
+import org.elastest.urjc.torm.utils.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -31,6 +38,9 @@ public class TestManagerController {
 	
 	@Autowired
 	private TestManagerService testManagerService;
+	
+	@Autowired
+	private IOUtils iOUtils;
 
 	@CrossOrigin(origins = {"http://localhost:4200", "http://localhost:8080"})
 	@RequestMapping(value = "/", method = RequestMethod.POST)
@@ -68,13 +78,26 @@ public class TestManagerController {
 
 
 	@CrossOrigin(origins = {"http://localhost:4200", "http://localhost:8080"})
-	@RequestMapping(value = "/id", method = RequestMethod.PUT)
+	@RequestMapping(value = "/{id}", method = RequestMethod.PUT)
 	@ResponseStatus(HttpStatus.OK)
 	public TestExecutionInfo startDockerContainer(@PathVariable String id,
 			@RequestBody TestExecutionInfo dockerContainerInfo) {
 		// DockerContainerInfo dockerContainerInfo = new DockerContainerInfo();
 
 		return dockerContainerInfo;
+	}
+	
+	@CrossOrigin(origins = {"http://localhost:4200", "http://localhost:8080"})
+	@RequestMapping(value = "/external/testLogs", method = RequestMethod.GET)
+	@ResponseStatus(HttpStatus.OK)
+	public ResponseEntity<LogFragmentContainer> getTestLogs(@RequestParam("fromLine") Integer fromLine) {
+				
+		LogFragmentContainer logFragmentContainer = new LogFragmentContainer();
+		logFragmentContainer.setLogsFragments(iOUtils.getLogFragment(fromLine));
+		//iOUtils.setLogLines( new ArrayList<>());
+		
+		return new ResponseEntity<>(logFragmentContainer, HttpStatus.OK);
+		
 	}
 
 	@CrossOrigin(origins = {"http://localhost:4200", "http://localhost:8080"})

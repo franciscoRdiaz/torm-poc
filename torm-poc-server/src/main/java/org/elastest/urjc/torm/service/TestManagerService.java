@@ -14,7 +14,9 @@ import org.apache.maven.reporting.MavenReportException;
 import org.elastest.urjc.torm.api.data.TestExecutionInfo;
 import org.elastest.urjc.torm.api.data.TestExecutionInfoExt;
 import org.elastest.urjc.torm.api.data.EndExecutionMessage;
+import org.elastest.urjc.torm.api.data.LogTrace;
 import org.elastest.urjc.torm.utils.ExecStartResultCallbackWebsocket;
+import org.elastest.urjc.torm.utils.IOUtils;
 import org.elastest.urjc.torm.utils.StompMessageSenderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -55,6 +57,9 @@ public class TestManagerService {
 	
 	@Autowired
 	private StompMessageSenderService stompMessageSenderService;
+	
+	@Autowired
+	private IOUtils iOUtils;
 
 	private DockerClient dockerClient;
 	private CreateContainerResponse container;
@@ -97,7 +102,7 @@ public class TestManagerService {
 
 		this.dockerClient.startContainerCmd(this.container.getId()).exec();
 
-		this.manageLogs();
+		this.manageLogs(testExecutionInfo.getImageName());
 		
 		
 		testExecutionInfo.setId(this.container.getId());
@@ -111,13 +116,13 @@ public class TestManagerService {
 		return testExecutionInfo;
 	}
 
-	public void manageLogs() {
+	public void manageLogs(String imageName) {
 		FileWriter file = null;
 		PrintWriter pw = null;
 
 		try {
 
-			file = new FileWriter("D:/logs/torm/log.txt");
+			file = new FileWriter("D:/logs/torm/"+imageName.replace('/', '_')+".txt");
 			pw = new PrintWriter(file);
 
 			ExecStartResultCallbackWebsocket execStartResultCallbackWebsocket = context.getBean(ExecStartResultCallbackWebsocket.class);			
@@ -147,6 +152,8 @@ public class TestManagerService {
 		
 		this.saveTestSuite();
 		stompMessageSenderService.sendStompMessage(topicEndExecutionMessage, new EndExecutionMessage("END"));		
+		iOUtils.getLogLines().add("END");
+		
 		
 	}
 

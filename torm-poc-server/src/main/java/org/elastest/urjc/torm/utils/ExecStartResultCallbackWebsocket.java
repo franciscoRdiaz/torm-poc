@@ -24,7 +24,10 @@ public class ExecStartResultCallbackWebsocket extends ResultCallbackTemplate<Exe
 	private static final Logger LOGGER = LoggerFactory.getLogger(ExecStartResultCallbackWebsocket.class);
 	
 	@Autowired
-	private  SimpMessagingTemplate messagingTemplate;
+	private SimpMessagingTemplate messagingTemplate;
+	
+	@Autowired
+	private IOUtils iOUtils;
 	
 	private PrintWriter stdout, stderr;
 
@@ -62,6 +65,7 @@ public class ExecStartResultCallbackWebsocket extends ResultCallbackTemplate<Exe
 		afterTradeExecuted(trace, "/topic/logs");
 		
 		pw.println(frameString);
+		iOUtils.getLogLines().add(frameString);
 		
 		ObjectMapper mapper = new ObjectMapper();
 		if (frameString.contains("urlvnc")){
