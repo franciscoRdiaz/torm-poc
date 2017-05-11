@@ -2,9 +2,7 @@ package elastest.tormpocplugin;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
 
 import javax.servlet.ServletException;
 
@@ -12,18 +10,13 @@ import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
-import org.springframework.messaging.converter.StringMessageConverter;
-import org.springframework.web.socket.client.WebSocketClient;
-import org.springframework.web.socket.client.standard.StandardWebSocketClient;
-import org.springframework.web.socket.messaging.WebSocketStompClient;
-import org.springframework.web.socket.sockjs.client.RestTemplateXhrTransport;
-import org.springframework.web.socket.sockjs.client.SockJsClient;
-import org.springframework.web.socket.sockjs.client.Transport;
-import org.springframework.web.socket.sockjs.client.WebSocketTransport;
+import org.springframework.web.client.RestTemplate;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
+import com.sun.jersey.api.client.GenericType;
 import com.sun.jersey.api.client.WebResource;
 
 import hudson.Extension;
@@ -65,7 +58,16 @@ public class NewPipelineCommandStep extends Builder implements SimpleBuildStep {
     private String endMessage;
     
     private WSocketClientToLogs wsClientToLogs;
+    
     private final String webSocketAddress = "ws://localhost:8090/logs";
+    
+    private final String urlGetLogFragments = "http://localhost:8090/containers/external/testLogs";
+    
+    private RestTemplate restTemplate;
+    
+    private boolean testEnded;
+    
+    private Integer logLine;
     
     
 
@@ -92,9 +94,9 @@ public class NewPipelineCommandStep extends Builder implements SimpleBuildStep {
         // This is where you 'build' the project.
         // Since this is a dummy, we just say 'hello world' and call that a build.
     	ObjectMapper objetMapper = new ObjectMapper();
+    	logLine = 0;
     	
-    	listener.getLogger().println("Test writting in log:"+imageName);
-    	listener.getLogger().println("http://localhost:4200/#/test-manager");
+    	listener.getLogger().println("Test writting in log:"+imageName);    	
     	
     	endMessage = "";   	
     	
@@ -110,54 +112,71 @@ public class NewPipelineCommandStep extends Builder implements SimpleBuildStep {
 
 			ClientResponse response = webResource.type("application/json").post(ClientResponse.class, testExecutionInfo.toJSON());
 			TestExecutionInfo output = objetMapper.readValue(response.getEntity(String.class), TestExecutionInfo.class);
-			listener.getLogger().println("Server Response:"+output.getTestUrl());
+			listener.getLogger().println("ElasTest Test Url:"+output.getTestUrl());	
 			
-			//WSocketClientToLogs.latch = new CountDownLatch(1);
-			//ClientManager clientWs = ClientManager.createClient();
-			CountDownLatch waitForEndOfMessage = new CountDownLatch(1);
-						
-			try{
-				listener.getLogger().println("Start Websocket config.");
-				//WebSocketContainer container = ContainerProvider.getWebSocketContainer();
-				List<Transport> transports = new ArrayList<>(2);
-				transports.add(new WebSocketTransport(new StandardWebSocketClient()));
-				transports.add(new RestTemplateXhrTransport());
-
-				WebSocketClient webSocketClient = new SockJsClient(transports);
-				//WebSocketClient webSocketClient = new StandardWebSocketClient();
-				//WebSocketClient transport = new StandardWebSocketClient(container);
-				WebSocketStompClient stompClient = new WebSocketStompClient(webSocketClient);
-				stompClient.setMessageConverter(new StringMessageConverter());
-				LogStompSessionHandler handler = new LogStompSessionHandler(waitForEndOfMessage);	
-				listener.getLogger().println("Trying to connect 4.");
-				stompClient.connect("ws://localhost:8090/logs", handler);
-				listener.getLogger().println("Stablished connection");
-				waitForEndOfMessage.await();
-				
-				
-				 //clientWs.connectToServer(new WSocketClientToLogs(listener), new URI("ws://localhost:8090/topic/logs"));
-				 //WSocketClientToLogs.latch.await();
-			} catch (Exception e) {
-				listener.getLogger().println("Error message:"+e.getMessage() +"-Cause:"+ e.getCause());				
-	            throw new RuntimeException(e);
-	        }
-			
-
+//			try {
+//				Thread.sleep(1000);
+//			} catch (InterruptedException e) {
+//				// TODO Auto-generated catch block
+//				listener.getLogger().println(e.getMessage());
+//			}			
+					
 			if (response.getStatus() != 201) {
 				throw new RuntimeException("Failed : HTTP error code : " + response.getStatus());
 			}			
 			
-			
-			listener.getLogger().println("End test:"+imageName);
-			
+			listener.getLogger().println("End test:"+imageName);		
 
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 			listener.getLogger().println("Error:"+e.getMessage());
 		}
+		
+		testEnded = false;
+		try {
+			while (!requestLogs(listener)) {
+				try {
+					Thread.sleep(1000);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					listener.getLogger().println(e.getMessage());
+				}
+			}
+		} catch (Exception e) {
+			listener.getLogger().println(e.getMessage());
+		}
+    }
+    
+    private ClientResponse requestToElastest(String elasTestUrl){
+    	ClientResponse cr = null;
+    	return cr;
+    }
+    
+    private boolean requestLogs(TaskListener listener) throws Exception{
+    	ObjectMapper objetMapper = new ObjectMapper();    	
+    	
+    	try {	
+    		restTemplate = new RestTemplate();
+    		LogFragmentContainer logFragmentContainer = restTemplate.getForObject(new URI(urlGetLogFragments + "?fromLine=" + logLine), LogFragmentContainer.class);
+			
+    		for (LogTrace logTrace: logFragmentContainer.getLogsFragments()){				
+					listener.getLogger().println("Test Log:" + logTrace.getTrace());
+					logLine++;
+					if (logTrace.getTrace().equals("END")) {
+						testEnded = true;	
+						return true;
+					}							
+			}
 
-        
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			listener.getLogger().println("Error retriving logs:"+e.getMessage());
+			throw e;
+		}
+    	
+    	return testEnded;    	
     }
     
 	private void initializeWebSocket(TaskListener listener) throws URISyntaxException {
@@ -233,9 +252,7 @@ public class NewPipelineCommandStep extends Builder implements SimpleBuildStep {
          */
         public String getDisplayName() {
             return "Elastest Step Command";
-        }
-        
-        
+        }        
 
         @Override
         public boolean configure(StaplerRequest req, JSONObject formData) throws FormException {
